@@ -20,45 +20,56 @@ public class UserControl : MonoBehaviour
         Marker.SetActive(false);
     }
 
+    void HandleSelection()
+    {
+        var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            //the collider could be children of the unit, so we make sure to check in the parent
+            var unit = hit.collider.GetComponentInParent<Unit>();
+            m_Selected = unit;
+
+
+            //check if the hit object have a IUIInfoContent to display in the UI
+            //if there is none, this will be null, so this will hid the panel if it was displayed
+            var uiInfo = hit.collider.GetComponentInParent<UIMainScene.IUIInfoContent>();
+            UIMainScene.Instance.SetNewInfoContent(uiInfo);
+        }
+    }
+
+    void HandleAction()
+    {
+        var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit hit;
+        if (Physics.Raycast(ray, out hit))
+        {
+            var building = hit.collider.GetComponentInParent<Building>();
+
+            if (building != null)
+            {
+                m_Selected.GoTo(building);
+            }
+            else
+            {
+                m_Selected.GoTo(hit.point);
+            }
+        }
+    }
+
     private void Update()
     {
         Vector2 move = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
         GameCamera.transform.position = GameCamera.transform.position + new Vector3(move.y, 0, -move.x) * PanSpeed * Time.deltaTime;
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0)) // user left clicks
         {
-            var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                //the collider could be children of the unit, so we make sure to check in the parent
-                var unit = hit.collider.GetComponentInParent<Unit>();
-                m_Selected = unit;
-                
-                
-                //check if the hit object have a IUIInfoContent to display in the UI
-                //if there is none, this will be null, so this will hid the panel if it was displayed
-                var uiInfo = hit.collider.GetComponentInParent<UIMainScene.IUIInfoContent>();
-                UIMainScene.Instance.SetNewInfoContent(uiInfo);
-            }
+            HandleSelection();
         }
         else if (m_Selected != null && Input.GetMouseButtonDown(1))
-        {//right click give order to the unit
-            var ray = GameCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit hit;
-            if (Physics.Raycast(ray, out hit))
-            {
-                var building = hit.collider.GetComponentInParent<Building>();
-                
-                if (building != null)
-                {
-                    m_Selected.GoTo(building);
-                }
-                else
-                {
-                    m_Selected.GoTo(hit.point);
-                }
-            }
+        {
+            //right click give order to the unit
+            HandleAction();
         }
 
         MarkerHandling();
@@ -79,4 +90,6 @@ public class UserControl : MonoBehaviour
             Marker.transform.localPosition = Vector3.zero;
         }    
     }
+
+    
 }

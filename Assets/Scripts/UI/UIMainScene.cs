@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 
 public class UIMainScene : MonoBehaviour
 {
+    public const int MAIN_SCENE_INDEX = 0;
     public static UIMainScene Instance { get; private set; }
     
     public interface IUIInfoContent
@@ -72,5 +73,9 @@ public class UIMainScene : MonoBehaviour
             m_CurrentContent = content;
             InfoPopup.Name.text = content.GetName();
         }
+    }
+    public void StartNew()
+    {
+        SceneManager.LoadScene(MAIN_SCENE_INDEX);
     }
 }
